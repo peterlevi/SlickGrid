@@ -929,6 +929,17 @@ if (typeof Slick === "undefined") {
       }
     }
 
+    function getColumnCssRulesAsync(idx, cb) {
+      try {
+//        console.log("SlickGrid: trying getColumnCssRules");
+        rule = getColumnCssRules(idx);
+        cb(rule);
+      } catch (e) {
+        console.log("SlickGrid: getColumnCssRules failure, retrying");
+        setTimeout(function(){getColumnCssRulesAsync(idx, cb)}, 50);
+      }
+    }
+
     function getColumnCssRules(idx) {
       if (!stylesheet) {
         var sheets = document.styleSheets;
@@ -1109,7 +1120,13 @@ if (typeof Slick === "undefined") {
       for (var i = 0; i < columns.length; i++) {
         w = columns[i].width;
 
-        rule = getColumnCssRules(i);
+        try {
+          rule = getColumnCssRules(i);
+        } catch (e) {
+          console.log("SlickGrid: getColumnCssRules failure, restarting applyColumnWidths");
+          setTimeout(applyColumnWidths, 50);
+          return;
+        }
         rule.left.style.left = x + "px";
         rule.right.style.right = (canvasWidth - x - w) + "px";
 
